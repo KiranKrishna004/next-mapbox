@@ -2,8 +2,14 @@ import { connect } from "mongoose"
 
 export const connectMongoDB = async () => {
   try {
-    await connect(process.env.MONGODB_URI)
-    console.log("Connected to MongoDB.")
+    const URI = process.env.MONGODB_URI
+    if (URI) {
+      await connect(URI)
+
+      console.log("Connected to MongoDB.")
+    } else {
+      console.log("MONGODB_URI missing.")
+    }
   } catch (error) {
     console.log(error)
   }
