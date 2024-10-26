@@ -17,11 +17,13 @@ export async function POST(req: NextRequest) {
       user === null ? false : await bcrypt.compare(password, user.passwordHash)
 
     if (!(user && passwordCorrect)) {
-      return NextResponse.json({
-        error: "Invalid User",
-        message: "Invalid username or password",
-        status: 400,
-      })
+      return NextResponse.json(
+        {
+          error: "Invalid User",
+          message: "Invalid username or password",
+        },
+        { status: 400 }
+      )
     }
 
     const userForToken = {
@@ -37,11 +39,13 @@ export async function POST(req: NextRequest) {
         name: user.name,
       })
     } else {
-      return NextResponse.json({
-        error: "Missing Secret",
-        message: "SECRET missing from env",
-        status: 500,
-      })
+      return NextResponse.json(
+        {
+          error: "Missing Secret",
+          message: "SECRET missing from env",
+        },
+        { status: 500 }
+      )
     }
   } catch (error) {
     ErrorHandler(error)
