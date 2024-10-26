@@ -1,3 +1,4 @@
+import { URI } from "@/app/constants"
 import { connect } from "mongoose"
 
 interface MongooseGlobal {
@@ -22,7 +23,6 @@ export async function dbConnect() {
     console.log("already connected")
     return global.mongoose.conn
   } else {
-    const URI = process.env.MONGODB_URI
     if (URI) {
       const promise = connect(URI, { autoIndex: true })
 

@@ -1,3 +1,4 @@
+import { SALT_ROUNDS } from "@/app/constants"
 import { ErrorHandler } from "@/app/utils/errorhandler"
 import { dbConnect } from "@/lib/mongodb"
 import User from "@/models/User"
@@ -21,8 +22,7 @@ export async function POST(request: NextRequest) {
     await dbConnect()
     const { username, name, password } = await request.json()
 
-    const saltRounds = 10
-    const passwordHash = await bcrypt.hash(password, saltRounds)
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
 
     const user = new User({
       username,
