@@ -2,6 +2,9 @@
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { signInLogic } from "@/app/actions/signin"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@radix-ui/react-label"
 
 export function SigninForm() {
   const { toast } = useToast()
@@ -23,22 +26,26 @@ export function SigninForm() {
 
   return (
     <form action={handleSignIn}>
-      <div>
-        <label htmlFor="username">User Name</label>
-        <input id="username" name="username" placeholder="Username" />
-      </div>
-
-      <div>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Password"
-        />
-      </div>
-
-      <Button type="submit">Sign in</Button>
+      <Card>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="username">Username</Label>
+            <Input name="username" id="username" placeholder="Pedro Duarte" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              name="password"
+              id="password"
+              placeholder="********"
+              type="password"
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button>Login</Button>
+        </CardFooter>
+      </Card>
     </form>
   )
 }

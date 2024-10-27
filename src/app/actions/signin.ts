@@ -1,6 +1,6 @@
 "use server"
-import { SignInFormSchema } from "@/app/lib/definitions"
-import { createSession } from "../lib/session"
+import { SignInFormSchema } from "@/lib/definitions"
+import { createSession } from "@/lib/session"
 
 export const signInLogic = async (userCred: unknown) => {
   const result = SignInFormSchema.safeParse(userCred)

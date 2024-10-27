@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { logout } from "../lib/session"
+import { logout } from "@/lib/session"
 
 export const SignOut = () => {
   return (

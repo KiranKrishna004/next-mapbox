@@ -1,7 +1,7 @@
 import "server-only"
 
 import { cookies } from "next/headers"
-import { BASE_URL } from "../constants"
+import { BASE_URL } from "@/app/constants"
 
 export async function createSession(payload: {
   username: string
@@ -12,7 +12,6 @@ export async function createSession(payload: {
     body: JSON.stringify(payload),
   })
   const token = response.headers.get("set-cookie")?.split("=")[1]
-  console.log("Token: ", token)
 
   if (token) {
     const cookieStore = await cookies()
@@ -28,7 +27,6 @@ export async function createSession(payload: {
 
 export async function getSession() {
   const cookieStore = await cookies()
-  console.log("cookieStore: ", cookieStore)
   const session = cookieStore.get("session")?.value
   if (!session) return null
 

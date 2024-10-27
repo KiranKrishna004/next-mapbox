@@ -1,6 +1,6 @@
 import { SECRET } from "@/app/constants"
-import { dbConnect } from "@/app/lib/mongoose"
 import { ErrorHandler } from "@/app/utils/errorhandler"
+import { dbConnect } from "@/lib/mongoose"
 import User from "@/models/User"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"

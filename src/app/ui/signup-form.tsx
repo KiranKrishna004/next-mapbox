@@ -1,8 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
 import { signUpLogic } from "@/app/actions/signup"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { useToast } from "@/hooks/use-toast"
+import { Label } from "@radix-ui/react-label"
 
 export function SignupForm() {
   const { toast } = useToast()
@@ -27,27 +30,30 @@ export function SignupForm() {
 
   return (
     <form action={handleSignUp}>
-      <div>
-        <label htmlFor="name">Name</label>
-        <input id="name" name="name" placeholder="Name" />
-      </div>
-
-      <div>
-        <label htmlFor="username">User Name</label>
-        <input id="username" name="username" placeholder="Username" />
-      </div>
-
-      <div>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Password"
-        />
-      </div>
-
-      <Button type="submit">Sign Up</Button>
+      <Card>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="username">Username</Label>
+            <Input name="username" id="username" placeholder="Pedro Duarte" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="name">Name</Label>
+            <Input name="name" id="name" placeholder="Pedro Duarte" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              name="password"
+              id="password"
+              placeholder="********"
+              type="password"
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button>Signup</Button>
+        </CardFooter>
+      </Card>
     </form>
   )
 }

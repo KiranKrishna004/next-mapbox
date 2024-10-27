@@ -1,5 +1,5 @@
 "use server"
-import { SignupFormSchema } from "@/app/lib/definitions"
+import { SignupFormSchema } from "@/lib/definitions"
 
 export const signUpLogic = async (userCred: unknown) => {
   const result = SignupFormSchema.safeParse(userCred)
