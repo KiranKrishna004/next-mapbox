@@ -1,6 +1,6 @@
 import { SECRET } from "@/app/constants"
+import { dbConnect } from "@/app/lib/mongoose"
 import { ErrorHandler } from "@/app/utils/errorhandler"
-import { dbConnect } from "@/lib/mongodb"
 import User from "@/models/User"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -27,17 +27,23 @@ export async function POST(req: NextRequest) {
     }
 
     const userForToken = {
-      username: user.username,
-      id: user.__id,
+      id: user.id,
     }
-    if (SECRET) {
-      const token = jwt.sign(userForToken, SECRET, { expiresIn: 60 * 60 })
 
-      return NextResponse.json({
-        token,
-        username: user.username,
-        name: user.name,
+    if (SECRET) {
+      const token: string = jwt.sign(userForToken, SECRET, {
+        expiresIn: 60 * 60,
       })
+      const response = NextResponse.json(
+        {
+          message: "Successfully logged in",
+        },
+        { status: 200 }
+      )
+
+      response.cookies.set("token", token)
+
+      return response
     } else {
       return NextResponse.json(
         {
