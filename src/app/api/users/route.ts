@@ -1,8 +1,7 @@
-import { SALT_ROUNDS } from "@/app/constants"
 import { ErrorHandler } from "@/app/utils/errorhandler"
-import { dbConnect } from "@/lib/mongodb"
+import { dbConnect } from "@/app/lib/mongoose"
+import { saltAndHashPassword } from "@/app/utils/password"
 import User from "@/models/User"
-import bcrypt from "bcrypt"
 import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-static"
@@ -21,8 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect()
     const { username, name, password } = await request.json()
-
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
+    const passwordHash = await saltAndHashPassword(password)
 
     const user = new User({
       username,
