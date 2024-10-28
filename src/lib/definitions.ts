@@ -5,7 +5,7 @@ const MAX_FILE_SIZE = 10000000
 function checkFileType(file: File) {
   if (file?.name) {
     const fileType = file.name.split(".").pop()
-    return fileType === "kml" || fileType === "tiff" || fileType === "geojson"
+    return fileType === "kml" || fileType === "tiff" || fileType === "json"
   }
   return false
 }

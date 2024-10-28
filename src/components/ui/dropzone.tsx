@@ -1,12 +1,16 @@
 "use client"
 
-import { uploadfile } from "@/app/actions/uploadfile"
+import { uploadfile, UploadFileType } from "@/app/actions/uploadfile"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import { useDropzone } from "react-dropzone"
 
-export default function Dropzone({ setMapData }: { setMapData: any }) {
+export default function Dropzone({
+  setMapData,
+}: {
+  setMapData: Dispatch<SetStateAction<UploadFileType[] | null>>
+}) {
   const [files, setFiles] = useState<File[] | []>([])
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -18,6 +22,7 @@ export default function Dropzone({ setMapData }: { setMapData: any }) {
     accept: {
       "image/tiff": [".tiff"],
       "application/geo+json": [".geojson"],
+      "application/json": [".json"],
       "application/vnd.google-earth.kml+xml": [".kml"],
     },
   })
