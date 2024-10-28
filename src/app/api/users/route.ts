@@ -1,5 +1,5 @@
 import { ErrorHandler } from "@/app/utils/errorhandler"
-import { dbConnect } from "@/app/lib/mongoose"
+import { dbConnect } from "@/lib/mongoose"
 import { saltAndHashPassword } from "@/app/utils/password"
 import User from "@/models/User"
 import { NextRequest, NextResponse } from "next/server"
