@@ -1,10 +1,18 @@
 import { getSession } from "@/lib/session"
-import { SignOut } from "@/app/ui/signout"
-import { AuthForm } from "./ui/auth-form"
+import { HomePage } from "./ui/home-page"
 
 export default async function Home() {
   const session = await getSession()
+  console.log(session)
 
-  console.log("session: ", session)
-  return session ? <SignOut /> : <AuthForm />
+  // return session ? (
+  //   <div>
+  //     <Navbar />
+  //   </div>
+  // ) : (
+  //   // <Navbar />
+  //   <AuthForm />
+  // )
+
+  return <HomePage />
 }
