@@ -1,31 +1,23 @@
 import { z } from "zod"
 
-const MAX_FILE_SIZE = 5000000
+const MAX_FILE_SIZE = 10000000
 
 function checkFileType(file: File) {
   if (file?.name) {
     const fileType = file.name.split(".").pop()
-    return fileType === "docx" || fileType === "pdf"
+    return fileType === "kml" || fileType === "tiff" || fileType === "geojson"
   }
   return false
 }
 
 // Define schema for each individual file
-const singleFileSchema = z.object({
-  file: z
-    .any()
-    .refine((file: File) => file?.size > 0, "File is required.")
-    .refine((file: File) => file.size < MAX_FILE_SIZE, "Max size is 5MB.")
-    .refine(
-      (file: File) => checkFileType(file),
-      "Only .pdf and .docx formats are supported."
-    ),
-})
-
-// Define schema for array of files
-export const fileArraySchema = z
-  .array(singleFileSchema)
-  .nonempty("At least one file is required.")
+export const FileSchema = z
+  .any()
+  .refine((file) => file.size < MAX_FILE_SIZE, "Max size is 5MB.")
+  .refine(
+    (file) => checkFileType(file),
+    "Only .tiff, .kml and .geojson formats are supported."
+  )
 
 export const SignInFormSchema = z.object({
   username: z

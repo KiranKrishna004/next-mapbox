@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { useState } from "react"
 import { useDropzone } from "react-dropzone"
 
-export default function Dropzone() {
+export default function Dropzone({ setMapData }: { setMapData: any }) {
   const [files, setFiles] = useState<File[] | []>([])
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -24,6 +24,10 @@ export default function Dropzone() {
 
   const handleRemoveFile = (index: number) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
+  }
+
+  const handleUpload = () => {
+    uploadfile(files).then((res) => setMapData(res))
   }
 
   return (
@@ -70,7 +74,7 @@ export default function Dropzone() {
               </div>
             ))}
           </div>
-          <Button onClick={() => uploadfile(files)}>Upload Files</Button>
+          <Button onClick={handleUpload}>Upload Files</Button>
         </div>
       )}
     </Card>
