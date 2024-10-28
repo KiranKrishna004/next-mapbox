@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator"
-import { logout } from "@/lib/session"
+import { Logout } from "../actions/logout"
 
 export const Navbar = () => {
   return (
@@ -18,12 +18,7 @@ export const Navbar = () => {
             <Button variant="secondary">Kiran Krishna </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuItem
-              onClick={async () => {
-                "use server"
-                await logout()
-              }}
-            >
+            <DropdownMenuItem onClick={Logout}>
               Log out
               <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>
