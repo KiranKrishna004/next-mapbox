@@ -11,7 +11,7 @@ export const HomePage = () => {
   const [selectedFeature, setSelectedFeature] = useState("Layer")
   const [mapData, setMapData] = useState<UploadFileType | null>(null)
 
-  const features = ["Layer", "Distance", "Point"]
+  const features = ["Layer", "Distance", "Point", "Draw"]
 
   return (
     <>

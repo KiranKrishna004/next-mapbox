@@ -11,8 +11,12 @@ import mapboxgl, {
 } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useEffect, useRef, useState } from "react"
-
+import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import type { MouseEvent } from "react"
+import { area } from "@turf/turf"
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
+import "mapbox-gl/dist/mapbox-gl.css"
+
 const INITIAL_CENTER: [number, number] = [
   -71.97722138410576, -13.517379300798098,
 ]
@@ -47,6 +51,12 @@ const activeMenuItemStyle = {
 
 type DisplayFeatureType = keyof Omit<GeoJSONFeature, "geometry" | "bbox">
 
+const paragraphStyle = {
+  fontFamily: "Open Sans",
+  margin: 0,
+  fontSize: 13,
+}
+
 export const MapBox = ({
   mapData,
   selectedFeature,
@@ -57,6 +67,7 @@ export const MapBox = ({
   const isDistanceMap = selectedFeature === "Distance"
   const isLayerMap = selectedFeature === "Layer"
   const isPointMap = selectedFeature === "Point"
+  const isDrawMap = selectedFeature === "Draw"
   const allLayerIds = mapData ? mapData.map((data) => data.filename) : []
 
   const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER)
@@ -71,6 +82,7 @@ export const MapBox = ({
 
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const [roundedArea, setRoundedArea] = useState<number | null>(null)
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -94,6 +106,37 @@ export const MapBox = ({
       mapRef.current?.remove()
     }
   }, [])
+
+  useEffect(() => {
+    if (isDrawMap) {
+      const draw = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          polygon: true,
+          trash: true,
+        },
+        defaultMode: "draw_polygon",
+      })
+      console.log(mapRef.current)
+      mapRef.current?.addControl(draw)
+
+      mapRef.current?.on("draw.create", updateArea)
+      mapRef.current?.on("draw.delete", updateArea)
+      mapRef.current?.on("draw.update", updateArea)
+
+      function updateArea(e: { type: string }) {
+        const data = draw.getAll()
+        if (data.features.length > 0) {
+          const drawArea = area(data)
+          setRoundedArea(Math.round(drawArea * 100) / 100)
+        } else {
+          setRoundedArea(null)
+          if (e.type !== "draw.delete")
+            alert("Click the map to draw a polygon.")
+        }
+      }
+    }
+  }, [isDrawMap])
 
   // When active layers changes on Layer view
   useEffect(() => {
@@ -309,6 +352,34 @@ export const MapBox = ({
                   {coord}
                 </p>
               ))}
+          </div>
+        )}
+
+        {isDrawMap && (
+          <div
+            className="calculation-box"
+            style={{
+              height: 75,
+              width: 150,
+              position: "absolute",
+              bottom: 40,
+              left: 10,
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              padding: 15,
+              textAlign: "center",
+            }}
+          >
+            <p style={paragraphStyle}>Click the map to draw a polygon.</p>
+            <div id="calculated-area">
+              {roundedArea && (
+                <>
+                  <p style={paragraphStyle}>
+                    <strong>{roundedArea}</strong>
+                  </p>
+                  <p style={paragraphStyle}>square meters</p>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
