@@ -3,8 +3,10 @@
 import { uploadfile, UploadFileType } from "@/app/actions/uploadfile"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Dispatch, SetStateAction, useState } from "react"
+import { Dispatch, SetStateAction, useState, SVGProps } from "react"
 import { useDropzone } from "react-dropzone"
+
+type TSVGElementProps = SVGProps<SVGSVGElement>
 
 export default function Dropzone({
   setMapData,
@@ -86,7 +88,7 @@ export default function Dropzone({
   )
 }
 
-function CloudUploadIcon(props) {
+function CloudUploadIcon(props: TSVGElementProps) {
   return (
     <svg
       {...props}
@@ -107,7 +109,7 @@ function CloudUploadIcon(props) {
   )
 }
 
-function FileIcon(props) {
+function FileIcon(props: TSVGElementProps) {
   return (
     <svg
       {...props}
@@ -127,7 +129,7 @@ function FileIcon(props) {
   )
 }
 
-function XIcon(props) {
+function XIcon(props: TSVGElementProps) {
   return (
     <svg
       {...props}
