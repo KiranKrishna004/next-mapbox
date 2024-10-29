@@ -1,15 +1,17 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LayerMapbox } from "./layer-mapbox"
+"use client"
+
+import Dropzone from "@/components/ui/dropzone"
+import { MapBox } from "@/components/ui/map-box"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dispatch, SetStateAction, useState } from "react"
+import { UploadFileType } from "../actions/uploadfile"
 import { Navbar } from "./navbar"
 
 export const HomePage = () => {
-  const features = [
-    { name: "Distance", component: <></> },
-    {
-      name: "Layer",
-      component: <LayerMapbox />,
-    },
-  ]
+  const [selectedFeature, setSelectedFeature] = useState("Layer")
+  const [mapData, setMapData] = useState<UploadFileType | null>(null)
+
+  const features = ["Layer", "Distance"]
 
   return (
     <>
@@ -17,23 +19,40 @@ export const HomePage = () => {
 
       <div className="flex flex-col pt-12">
         <Tabs
-          defaultValue={features[0].name}
+          defaultValue={selectedFeature}
           className="flex justify-center items-center flex-col w-full"
         >
           <TabsList className="w-fit">
             {features.map((feat) => (
-              <TabsTrigger key={feat.name} value={feat.name}>
-                {feat.name}
+              <TabsTrigger
+                key={feat}
+                value={feat}
+                onClick={() => setSelectedFeature(feat)}
+              >
+                {feat}
               </TabsTrigger>
             ))}
           </TabsList>
-          {features.map((feat) => (
-            <TabsContent key={feat.name} className="w-full" value={feat.name}>
-              {feat.component}
-            </TabsContent>
-          ))}
+          <div className="flex flex-col items-center pt-6 w-full">
+            {selectedComponent(selectedFeature, setMapData)}
+            <MapBox mapData={mapData} selectedFeature={selectedFeature} />
+          </div>
         </Tabs>
       </div>
     </>
   )
+}
+
+function selectedComponent(
+  selectedFeature: string,
+  setMapData: Dispatch<SetStateAction<UploadFileType | null>>
+) {
+  switch (selectedFeature) {
+    case "Distance":
+      return
+    case "Layer":
+      return <Dropzone setMapData={setMapData} />
+    default:
+      return <>Unknown Page</>
+  }
 }
