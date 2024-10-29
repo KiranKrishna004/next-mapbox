@@ -38,7 +38,7 @@ export default function Dropzone({
   }
 
   return (
-    <Card className="w-1/2 p-6 space-y-6">
+    <Card className="w-full p-6 space-y-6">
       <div className="space-y-2">
         <h3 className="text-2xl font-bold">File Upload</h3>
         <p className="text-muted-foreground">

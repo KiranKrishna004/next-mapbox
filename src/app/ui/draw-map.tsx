@@ -1,18 +1,11 @@
-"use client"
-
-import { UploadFileType } from "@/app/actions/uploadfile"
-import { MAPBOX_TOKEN } from "@/app/constants"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
+import { LngLatLike, Map } from "mapbox-gl"
+import { useEffect, useRef, useState } from "react"
+import { INITIAL_CENTER, INITIAL_ZOOM, MAPBOX_TOKEN } from "../constants"
+
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { area } from "@turf/turf"
-import { GeoJSONFeature, LngLatLike, Map, Marker } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { useEffect, useRef, useState } from "react"
-
-const INITIAL_CENTER: [number, number] = [
-  -71.97722138410576, -13.517379300798098,
-]
-const INITIAL_ZOOM = 2
 
 const paragraphStyle = {
   fontFamily: "Open Sans",
@@ -20,15 +13,7 @@ const paragraphStyle = {
   fontSize: 13,
 }
 
-export const MapBox = ({
-  mapData,
-  selectedFeature,
-}: {
-  mapData: UploadFileType | null
-  selectedFeature: string
-}) => {
-  const isDrawMap = selectedFeature === "Draw"
-
+export const DrawMapBox = () => {
   const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER)
   const [zoom, setZoom] = useState<number>(INITIAL_ZOOM)
 
@@ -43,17 +28,11 @@ export const MapBox = ({
       container: mapContainerRef.current,
       center: INITIAL_CENTER as [number, number],
       zoom: INITIAL_ZOOM,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: "mapbox://styles/mapbox/satellite-v9",
     })
 
     mapRef.current?.on("move", addMouseMove)
 
-    return () => {
-      mapRef.current?.remove()
-    }
-  }, [])
-
-  useEffect(() => {
     const draw = new MapboxDraw({
       displayControlsDefault: false,
       controls: {
@@ -62,26 +41,27 @@ export const MapBox = ({
       },
       defaultMode: "draw_polygon",
     })
-    if (isDrawMap) {
-      mapRef.current?.addControl(draw)
+    mapRef.current?.addControl(draw)
 
-      mapRef.current?.on("draw.create", updateArea)
-      mapRef.current?.on("draw.delete", updateArea)
-      mapRef.current?.on("draw.update", updateArea)
+    mapRef.current?.on("draw.create", updateArea)
+    mapRef.current?.on("draw.delete", updateArea)
+    mapRef.current?.on("draw.update", updateArea)
 
-      function updateArea(e: { type: string }) {
-        const data = draw.getAll()
-        if (data.features.length > 0) {
-          const drawArea = area(data)
-          setRoundedArea(Math.round(drawArea * 100) / 100)
-        } else {
-          setRoundedArea(null)
-          if (e.type !== "draw.delete")
-            alert("Click the map to draw a polygon.")
-        }
+    function updateArea(e: { type: string }) {
+      const data = draw.getAll()
+      if (data.features.length > 0) {
+        const drawArea = area(data)
+        setRoundedArea(Math.round(drawArea * 100) / 100)
+      } else {
+        setRoundedArea(null)
+        if (e.type !== "draw.delete") alert("Click the map to draw a polygon.")
       }
     }
-  }, [isDrawMap])
+
+    return () => {
+      mapRef.current?.remove()
+    }
+  }, [])
 
   function addMouseMove() {
     // get the current center coordinates and zoom level from the map
@@ -101,7 +81,7 @@ export const MapBox = ({
   }
 
   return (
-    <div className="flex w-full mt-12 pb-12 justify-center items-center">
+    <div className="flex w-full pb-12 justify-center items-center">
       <div className="w-[650px] h-[650px] relative">
         <div className="sidebar">
           Longitude: {(center as number[])[0].toFixed(4)} | Latitude:{" "}
@@ -119,7 +99,7 @@ export const MapBox = ({
         <div
           className="calculation-box"
           style={{
-            height: 75,
+            height: 110,
             width: 150,
             position: "absolute",
             bottom: 40,
