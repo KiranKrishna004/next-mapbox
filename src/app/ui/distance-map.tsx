@@ -1,34 +1,30 @@
 "use client"
 
+import { useRef, useEffect, useState } from "react"
+import mapboxgl, { GeoJSONFeature } from "mapbox-gl"
+import * as turf from "@turf/turf"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { useEffect, useRef, useState } from "react"
-import { LngLatLike, Map } from "mapbox-gl"
-import { INITIAL_CENTER, INITIAL_ZOOM, MAPBOX_TOKEN } from "../constants"
-import { length } from "@turf/turf"
+import { MAPBOX_TOKEN } from "../constants"
+
+mapboxgl.accessToken = "YOUR_MAPBOX_ACCESS_TOKEN"
 
 export const DistanceMapBox = () => {
-  const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER)
-  const [zoom, setZoom] = useState<number>(INITIAL_ZOOM)
-
-  const mapRef = useRef<mapboxgl.Map | null>(null)
-  const mapContainerRef = useRef<HTMLDivElement | null>(null)
+  const [distance, setDistance] = useState(0)
+  const mapContainerRef = useRef(null)
+  const [geojson, setGeojson] = useState({
+    type: "FeatureCollection",
+    features: [],
+  })
 
   useEffect(() => {
-    if (!mapContainerRef.current) return
-    mapRef.current = new Map({
+    const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       accessToken: MAPBOX_TOKEN,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: INITIAL_CENTER as [number, number],
-      zoom: INITIAL_ZOOM,
+      center: [2.3399, 48.8555],
+      zoom: 12,
     })
 
-    const geojson = {
-      type: "FeatureCollection",
-      features: [],
-    }
-
-    // Used to draw a line between points
     const linestring = {
       type: "Feature",
       geometry: {
@@ -37,14 +33,13 @@ export const DistanceMapBox = () => {
       },
     }
 
-    mapRef.current.on("load", () => {
-      mapRef.current?.addSource("geojson", {
+    map.on("load", () => {
+      map.addSource("geojson", {
         type: "geojson",
         data: geojson,
       })
 
-      // Add styles to the map
-      mapRef.current?.addLayer({
+      map.addLayer({
         id: "measure-points",
         type: "circle",
         source: "geojson",
@@ -54,7 +49,8 @@ export const DistanceMapBox = () => {
         },
         filter: ["in", "$type", "Point"],
       })
-      mapRef.current?.addLayer({
+
+      map.addLayer({
         id: "measure-lines",
         type: "line",
         source: "geojson",
@@ -69,22 +65,17 @@ export const DistanceMapBox = () => {
         filter: ["in", "$type", "LineString"],
       })
 
-      mapRef.current?.on("click", (e) => {
+      map.on("click", (e) => {
         const features = map.queryRenderedFeatures(e.point, {
           layers: ["measure-points"],
         })
 
-        // Remove the linestring from the group
-        // so we can redraw it based on the points collection.
-        if (geojson.features.length > 1) geojson.features.pop()
+        let updatedGeojson = { ...geojson }
+        if (updatedGeojson.features.length > 1) updatedGeojson.features.pop()
 
-        // Clear the distance container to populate it with a new value.
-        distanceContainer.innerHTML = ""
-
-        // If a feature was clicked, remove it from the map.
         if (features.length) {
           const id = features[0].properties.id
-          geojson.features = geojson.features.filter(
+          updatedGeojson.features = updatedGeojson.features.filter(
             (point) => point.properties.id !== id
           )
         } else {
@@ -99,73 +90,59 @@ export const DistanceMapBox = () => {
             },
           }
 
-          geojson.features.push(point)
+          updatedGeojson.features.push(point)
         }
 
-        if (geojson.features.length > 1) {
-          linestring.geometry.coordinates = geojson.features.map(
+        if (updatedGeojson.features.length > 1) {
+          linestring.geometry.coordinates = updatedGeojson.features.map(
             (point) => point.geometry.coordinates
           )
+          updatedGeojson.features.push(linestring)
 
-          geojson.features.push(linestring)
-
-          // Populate the distanceContainer with total distance
-          const value = document.createElement("pre")
-          const distance = length(linestring)
-          value.textContent = `Total distance: ${distance.toLocaleString()}km`
-          distanceContainer.appendChild(value)
+          const distance = turf.length(linestring)
+          setDistance(distance)
         }
 
-        mapRef.current?.getSource("geojson").setData(geojson)
+        setGeojson(updatedGeojson)
+        map.getSource("geojson").setData(updatedGeojson)
       })
-    })
-    mapRef.current?.on("mousemove", (e) => {
-      const features = mapRef.current?.queryRenderedFeatures(e.point, {
-        layers: ["measure-points"],
+
+      map.on("mousemove", (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: ["measure-points"],
+        })
+        map.getCanvas().style.cursor = features.length ? "pointer" : "crosshair"
       })
-      // Change the cursor to a pointer when hovering over a point on the map.
-      // Otherwise cursor is a crosshair.
-      mapRef.current!.getCanvasContainer().style.cursor = features.length
-        ? "pointer"
-        : "crosshair"
     })
 
-    mapRef.current?.on("move", addMouseMove)
+    return () => map.remove()
   }, [])
-
-  function addMouseMove() {
-    // get the current center coordinates and zoom level from the map
-    const mapCenter = mapRef.current!.getCenter()
-    const mapZoom = mapRef.current!.getZoom()
-
-    // update state
-    setCenter([mapCenter.lng, mapCenter.lat])
-    setZoom(mapZoom)
-  }
-
-  const handleButtonClick = () => {
-    mapRef.current?.flyTo({
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
-    })
-  }
 
   return (
     <div className="flex w-full pb-12 justify-center items-center">
       <div className="w-[650px] h-[650px] relative">
-        <div className="sidebar">
-          Longitude: {(center as number[])[0].toFixed(4)} | Latitude:{" "}
-          {(center as number[])[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
-        </div>
-        <button className="reset-button" onClick={handleButtonClick}>
-          Reset
-        </button>
         <div
-          id="map-container"
+          className="w-full h-full"
           ref={mapContainerRef}
-          style={{ cursor: "crosshair", height: "100%", width: "100%" }}
+          // style={{ position: "absolute", top: 0, bottom: 0, width: "100%" }}
         />
-        <div id="distance" className="distance-container" />
+        <div
+          className="distance-container"
+          style={{
+            position: "absolute",
+            top: "10px",
+            left: "10px",
+            zIndex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            color: "#fff",
+            fontSize: "11px",
+            lineHeight: "18px",
+            padding: "5px 10px",
+            borderRadius: "3px",
+          }}
+        >
+          Total distance: {distance} km
+        </div>
       </div>
     </div>
   )
