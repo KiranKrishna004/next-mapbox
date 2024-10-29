@@ -15,7 +15,9 @@ export interface GeoJsonType {
 
 export type UploadFileType = (GeoJsonType | UploadFileErrorType)[]
 
-export async function uploadfile(files: File[]) {
+export async function uploadfile(
+  files: File[]
+): Promise<UploadFileType | null> {
   const filesResult: Array<Promise<UploadFileType>> = files.map(
     async (file) => {
       const result = FileSchema.safeParse(file)

@@ -1,46 +1,39 @@
-"use client"
-import Dropzone from "@/components/ui/dropzone"
-import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar"
-import { useState } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LayerMapbox } from "./layer-mapbox"
 import { Navbar } from "./navbar"
-import { MapBox } from "@/components/ui/map-box"
-import {
-  GeoJsonType,
-  UploadFileErrorType,
-  UploadFileType,
-} from "../actions/uploadfile"
 
 export const HomePage = () => {
-  const [mapData, setMapData] = useState<UploadFileType[] | null>(null)
-  const [selectedMap, setSelectedMap] = useState<
-    GeoJsonType | UploadFileErrorType | null
-  >(null)
+  const features = [
+    { name: "Distance", component: <></> },
+    {
+      name: "Layer",
+      component: <LayerMapbox />,
+    },
+  ]
 
-  console.log(selectedMap)
   return (
     <>
       <Navbar />
-      <div className="flex justify-center pt-6">
-        <Dropzone setMapData={setMapData} />
+
+      <div className="flex flex-col pt-12">
+        <Tabs
+          defaultValue={features[0].name}
+          className="flex justify-center items-center flex-col w-full"
+        >
+          <TabsList className="w-fit">
+            {features.map((feat) => (
+              <TabsTrigger key={feat.name} value={feat.name}>
+                {feat.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {features.map((feat) => (
+            <TabsContent key={feat.name} className="w-full" value={feat.name}>
+              {feat.component}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
-      {mapData && (
-        <>
-          <div className="flex pt-12 justify-center">
-            <Menubar className="w-min">
-              {mapData?.map((data) => (
-                <MenubarMenu key={data.filename}>
-                  <MenubarTrigger onClick={() => setSelectedMap(data)}>
-                    {data.filename}
-                  </MenubarTrigger>
-                </MenubarMenu>
-              ))}
-            </Menubar>
-          </div>
-        </>
-      )}
-      {selectedMap && "geojson" in selectedMap && (
-        <MapBox mapData={selectedMap} />
-      )}
     </>
   )
 }

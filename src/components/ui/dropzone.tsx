@@ -9,7 +9,7 @@ import { useDropzone } from "react-dropzone"
 export default function Dropzone({
   setMapData,
 }: {
-  setMapData: Dispatch<SetStateAction<UploadFileType[] | null>>
+  setMapData: Dispatch<SetStateAction<UploadFileType | null>>
 }) {
   const [files, setFiles] = useState<File[] | []>([])
 
