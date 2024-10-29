@@ -2,7 +2,7 @@
 
 import { UploadFileType } from "@/app/actions/uploadfile"
 import { MAPBOX_TOKEN } from "@/app/constants"
-import { LngLatLike, Map, MapMouseEvent } from "mapbox-gl"
+import { GeoJSONFeature, LngLatLike, Map, MapMouseEvent } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useEffect, useRef, useState } from "react"
 
@@ -84,13 +84,16 @@ function addMouseMove(
   setZoom(mapZoom)
 }
 
+type DisplayFeatureType = keyof Omit<GeoJSONFeature, "geometry" | "bbox">
+
 function addHoverInfo(
   e: MapMouseEvent,
   mapRef: MutableRefObject<Map | null>,
-  setDisplayFeatures: Dispatch<SetStateAction<undefined>>
+  setDisplayFeatures: Dispatch<SetStateAction<DisplayFeatureType[] | undefined>>
 ) {
-  const features = mapRef.current?.queryRenderedFeatures(e.point)
-  const displayProperties = [
+  const features: GeoJSONFeature[] | undefined =
+    mapRef.current?.queryRenderedFeatures(e.point)
+  const displayProperties: DisplayFeatureType[] = [
     "type",
     "properties",
     "id",
@@ -99,13 +102,11 @@ function addHoverInfo(
     "sourceLayer",
     "state",
   ]
-
   const formattedFeatures = features?.map((feat) => {
-    const displayFeat = {}
-    displayProperties.forEach((prop) => {
+    const displayFeat: DisplayFeatureType | null = null
+    displayProperties.forEach((prop: DisplayFeatureType) => {
       displayFeat[prop] = feat[prop]
     })
-
     return displayFeat
   })
 
@@ -127,7 +128,9 @@ export const MapBox = ({
   const [zoom, setZoom] = useState<number>(INITIAL_ZOOM)
   const [activeLayerIds, setActiveLayerIds] = useState(allLayerIds)
   const [mapLoaded, setMapLoaded] = useState(false)
-  const [displayFeatures, setDisplayFeatures] = useState()
+  const [displayFeatures, setDisplayFeatures] = useState<
+    DisplayFeatureType[] | undefined
+  >()
 
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
