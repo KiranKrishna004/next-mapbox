@@ -1,5 +1,6 @@
-import mapboxgl, { LngLatLike, Map, MapMouseEvent, Marker } from "mapbox-gl"
-import type { MouseEvent } from "react"
+"use client"
+
+import mapboxgl, { LngLatLike, Map, MapMouseEvent } from "mapbox-gl"
 import { useEffect, useRef, useState } from "react"
 import { INITIAL_CENTER, INITIAL_ZOOM, MAPBOX_TOKEN } from "../constants"
 
@@ -12,7 +13,7 @@ export const PointMapBox = () => {
   const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER)
   const [zoom, setZoom] = useState<number>(INITIAL_ZOOM)
   const [coordinates, setCoordinates] = useState<string[] | undefined>()
-  const [markers, setMarkers] = useState<Marker[] | []>([])
+  // const [markers, setMarkers] = useState<Marker[] | []>([])
 
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -49,7 +50,7 @@ export const PointMapBox = () => {
       .setLngLat(e.lngLat)
       .addTo(mapRef.current!)
 
-    setMarkers((markers) => [...markers, marker])
+    // setMarkers((markers) => [...markers, marker])
 
     function onDragEnd() {
       const lngLat = marker.getLngLat()

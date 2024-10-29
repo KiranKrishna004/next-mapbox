@@ -3,11 +3,12 @@
 import { UploadFileType } from "@/app/actions/uploadfile"
 import { MAPBOX_TOKEN } from "@/app/constants"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
 import { area } from "@turf/turf"
-import { GeoJSONFeature, LngLatLike, Map, Marker } from "mapbox-gl"
-import "mapbox-gl/dist/mapbox-gl.css"
+import { LngLatLike, Map } from "mapbox-gl"
 import { useEffect, useRef, useState } from "react"
+
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
+import "mapbox-gl/dist/mapbox-gl.css"
 
 const INITIAL_CENTER: [number, number] = [
   -71.97722138410576, -13.517379300798098,

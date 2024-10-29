@@ -1,10 +1,12 @@
+"use client"
+
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
+import { area } from "@turf/turf"
 import { LngLatLike, Map } from "mapbox-gl"
 import { useEffect, useRef, useState } from "react"
 import { INITIAL_CENTER, INITIAL_ZOOM, MAPBOX_TOKEN } from "../constants"
 
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css"
-import { area } from "@turf/turf"
 import "mapbox-gl/dist/mapbox-gl.css"
 
 const paragraphStyle = {
