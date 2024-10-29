@@ -2,20 +2,20 @@
 
 import { UploadFileType } from "@/app/actions/uploadfile"
 import { MAPBOX_TOKEN } from "@/app/constants"
-import { GeoJSONFeature, LngLatLike, Map, MapMouseEvent } from "mapbox-gl"
+import mapboxgl, {
+  GeoJSONFeature,
+  LngLatLike,
+  Map,
+  MapMouseEvent,
+} from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useEffect, useRef, useState } from "react"
 
-import type {
-  Dispatch,
-  MouseEvent,
-  MutableRefObject,
-  SetStateAction,
-} from "react"
+import type { MouseEvent } from "react"
 const INITIAL_CENTER: [number, number] = [
   -71.97722138410576, -13.517379300798098,
 ]
-const INITIAL_ZOOM = 1
+const INITIAL_ZOOM = 2
 
 const menuStyle = {
   background: "#ffffff",
@@ -44,74 +44,7 @@ const activeMenuItemStyle = {
   color: "#ffffff",
 }
 
-function loadCustomJson(
-  mapRef: MutableRefObject<Map | null>,
-  mapData: UploadFileType
-) {
-  {
-    mapData.forEach((data) => {
-      mapRef.current?.addSource(data.filename, {
-        type: "geojson",
-        data: data.geojson,
-      })
-
-      mapRef.current?.addLayer({
-        id: data.filename,
-        type: "circle",
-        source: data.filename,
-        paint: {
-          "circle-radius": 2,
-          "circle-stroke-width": 1,
-          "circle-color": "red",
-          "circle-stroke-color": "white",
-        },
-      })
-    })
-  }
-}
-
-function addMouseMove(
-  mapRef: MutableRefObject<Map | null>,
-  setCenter: Dispatch<SetStateAction<LngLatLike>>,
-  setZoom: Dispatch<SetStateAction<number>>
-) {
-  // get the current center coordinates and zoom level from the map
-  const mapCenter = mapRef.current!.getCenter()
-  const mapZoom = mapRef.current!.getZoom()
-
-  // update state
-  setCenter([mapCenter.lng, mapCenter.lat])
-  setZoom(mapZoom)
-}
-
 type DisplayFeatureType = keyof Omit<GeoJSONFeature, "geometry" | "bbox">
-
-function addHoverInfo(
-  e: MapMouseEvent,
-  mapRef: MutableRefObject<Map | null>,
-  setDisplayFeatures: Dispatch<SetStateAction<DisplayFeatureType[] | undefined>>
-) {
-  const features: GeoJSONFeature[] | undefined =
-    mapRef.current?.queryRenderedFeatures(e.point)
-  const displayProperties: DisplayFeatureType[] = [
-    "type",
-    "properties",
-    "id",
-    "layer",
-    "source",
-    "sourceLayer",
-    "state",
-  ]
-  const formattedFeatures = features?.map((feat) => {
-    const displayFeat: DisplayFeatureType | null = null
-    displayProperties.forEach((prop: DisplayFeatureType) => {
-      displayFeat[prop] = feat[prop]
-    })
-    return displayFeat
-  })
-
-  setDisplayFeatures(formattedFeatures)
-}
 
 export const MapBox = ({
   mapData,
@@ -122,6 +55,7 @@ export const MapBox = ({
 }) => {
   const isDistanceMap = selectedFeature === "Distance"
   const isLayerMap = selectedFeature === "Layer"
+  const isPointMap = selectedFeature === "Point"
   const allLayerIds = mapData ? mapData.map((data) => data.filename) : []
 
   const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER)
@@ -131,6 +65,8 @@ export const MapBox = ({
   const [displayFeatures, setDisplayFeatures] = useState<
     DisplayFeatureType[] | undefined
   >()
+  const [coordinates, setCoordinates] = useState<string[] | undefined>()
+  const [markers, setMarkers] = useState([])
 
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -145,7 +81,7 @@ export const MapBox = ({
       style: "mapbox://styles/mapbox/streets-v12",
     })
 
-    mapRef.current?.on("move", () => addMouseMove(mapRef, setCenter, setZoom))
+    mapRef.current?.on("move", addMouseMove)
 
     mapRef.current.on("idle", () => {
       if (allLayerIds.every((id) => !mapRef.current?.getLayer(id))) {
@@ -174,21 +110,19 @@ export const MapBox = ({
   // Layer view conditions
   useEffect(() => {
     if (!isLayerMap) {
+      console.log("remove mousemove")
       if (mapData) {
         setMapLoaded(false)
-        mapRef.current?.off("load", () => loadCustomJson(mapRef, mapData))
+        mapRef.current?.off("load", loadCustomJson)
       }
-      mapRef.current?.off("mousemove", (e) =>
-        addHoverInfo(e, mapRef, setDisplayFeatures)
-      )
+      mapRef.current?.off("mousemove", addHoverInfo)
     } else {
+      console.log("add mousemove")
       if (mapData) {
         setMapLoaded(true)
-        mapRef.current?.on("load", () => loadCustomJson(mapRef, mapData))
+        mapRef.current?.on("load", loadCustomJson)
       }
-      mapRef.current?.on("mousemove", (e) =>
-        addHoverInfo(e, mapRef, setDisplayFeatures)
-      )
+      mapRef.current?.on("mousemove", addHoverInfo)
     }
   }, [isLayerMap])
 
@@ -197,6 +131,87 @@ export const MapBox = ({
     if (isDistanceMap) {
     }
   }, [isDistanceMap])
+
+  useEffect(() => {
+    if (isPointMap) {
+      mapRef.current?.on("click", addMarker)
+    } else {
+      mapRef.current?.off("click", addMarker)
+    }
+  }, [isPointMap])
+
+  function addMarker(e: MapMouseEvent) {
+    const marker = new mapboxgl.Marker({
+      draggable: true,
+    })
+      .setLngLat(e.lngLat)
+      .addTo(mapRef.current)
+
+    setMarkers(...markers, marker)
+
+    function onDragEnd() {
+      const lngLat = marker.getLngLat()
+      setCoordinates([`Longitude: ${lngLat.lng}`, `Latitude: ${lngLat.lat}`])
+    }
+
+    marker.on("dragend", onDragEnd)
+  }
+
+  function loadCustomJson() {
+    {
+      mapData!.forEach((data) => {
+        mapRef.current?.addSource(data.filename, {
+          type: "geojson",
+          data: data.geojson,
+        })
+
+        mapRef.current?.addLayer({
+          id: data.filename,
+          type: "circle",
+          source: data.filename,
+          paint: {
+            "circle-radius": 2,
+            "circle-stroke-width": 1,
+            "circle-color": "red",
+            "circle-stroke-color": "white",
+          },
+        })
+      })
+    }
+  }
+
+  function addMouseMove() {
+    // get the current center coordinates and zoom level from the map
+    const mapCenter = mapRef.current!.getCenter()
+    const mapZoom = mapRef.current!.getZoom()
+
+    // update state
+    setCenter([mapCenter.lng, mapCenter.lat])
+    setZoom(mapZoom)
+  }
+
+  function addHoverInfo(e: MapMouseEvent) {
+    const features: GeoJSONFeature[] | undefined =
+      mapRef.current?.queryRenderedFeatures(e.point)
+    const displayProperties: DisplayFeatureType[] = [
+      "type",
+      "properties",
+      "id",
+      "layer",
+      "source",
+      "sourceLayer",
+      "state",
+    ]
+    const formattedFeatures = features?.map((feat) => {
+      const displayFeat: DisplayFeatureType | {} = {}
+      displayProperties.forEach((prop: DisplayFeatureType) => {
+        displayFeat[prop] = feat[prop]
+      })
+      return displayFeat
+    })
+
+    setDisplayFeatures(formattedFeatures)
+  }
 
   const handleButtonClick = () => {
     mapRef.current?.flyTo({
@@ -265,6 +280,33 @@ export const MapBox = ({
           >
             {JSON.stringify(displayFeatures, null, 2)}
           </pre>
+        )}
+
+        {isPointMap && (
+          <div
+            style={{
+              background: "rgba(0, 0, 0, 0.5)",
+              color: "#fff",
+              position: "absolute",
+              bottom: "40px",
+              left: "10px",
+              padding: "5px 10px",
+              margin: 0,
+              fontFamily: "monospace",
+              fontWeight: "bold",
+              fontSize: "11px",
+              lineHeight: "18px",
+              borderRadius: "3px",
+              display: coordinates ? "block" : "none",
+            }}
+          >
+            {coordinates &&
+              coordinates.map((coord, index) => (
+                <p key={`${coord}-${index}`} style={{ marginBottom: 0 }}>
+                  {coord}
+                </p>
+              ))}
+          </div>
         )}
       </div>
     </div>

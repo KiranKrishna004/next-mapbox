@@ -11,7 +11,7 @@ export const HomePage = () => {
   const [selectedFeature, setSelectedFeature] = useState("Layer")
   const [mapData, setMapData] = useState<UploadFileType | null>(null)
 
-  const features = ["Layer", "Distance"]
+  const features = ["Layer", "Distance", "Point"]
 
   return (
     <>
@@ -48,11 +48,10 @@ function selectedComponent(
   setMapData: Dispatch<SetStateAction<UploadFileType | null>>
 ) {
   switch (selectedFeature) {
-    case "Distance":
-      return
     case "Layer":
       return <Dropzone setMapData={setMapData} />
+
     default:
-      return <>Unknown Page</>
+      return <></>
   }
 }
