@@ -7,6 +7,7 @@ import mapboxgl, {
   LngLatLike,
   Map,
   MapMouseEvent,
+  Marker,
 } from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useEffect, useRef, useState } from "react"
@@ -66,7 +67,7 @@ export const MapBox = ({
     DisplayFeatureType[] | undefined
   >()
   const [coordinates, setCoordinates] = useState<string[] | undefined>()
-  const [markers, setMarkers] = useState([])
+  const [markers, setMarkers] = useState<Marker[] | []>([])
 
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -110,14 +111,12 @@ export const MapBox = ({
   // Layer view conditions
   useEffect(() => {
     if (!isLayerMap) {
-      console.log("remove mousemove")
       if (mapData) {
         setMapLoaded(false)
         mapRef.current?.off("load", loadCustomJson)
       }
       mapRef.current?.off("mousemove", addHoverInfo)
     } else {
-      console.log("add mousemove")
       if (mapData) {
         setMapLoaded(true)
         mapRef.current?.on("load", loadCustomJson)
@@ -145,9 +144,9 @@ export const MapBox = ({
       draggable: true,
     })
       .setLngLat(e.lngLat)
-      .addTo(mapRef.current)
+      .addTo(mapRef.current!)
 
-    setMarkers(...markers, marker)
+    setMarkers((markers) => [...markers, marker])
 
     function onDragEnd() {
       const lngLat = marker.getLngLat()
@@ -218,6 +217,10 @@ export const MapBox = ({
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
     })
+    markers.forEach((marker) => {
+      marker.remove()
+    })
+    setMarkers([])
   }
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {

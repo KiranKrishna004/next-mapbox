@@ -18,8 +18,8 @@ export type UploadFileType = (GeoJsonType | UploadFileErrorType)[]
 export async function uploadfile(
   files: File[]
 ): Promise<UploadFileType | null> {
-  const filesResult: Array<Promise<UploadFileType>> = files.map(
-    async (file) => {
+  const filesResult: Array<Promise<UploadFileErrorType | GeoJsonType>> =
+    files.map(async (file) => {
       const result = FileSchema.safeParse(file)
       if (!result.success) {
         let errorMessage = ""
@@ -58,12 +58,9 @@ export async function uploadfile(
             return { error: "Invalid mime type", filename: file.name }
         }
       }
-    }
-  )
+    })
 
   const response = await Promise.all(filesResult)
-
-  console.log("respone: ", response)
 
   return response
 }
